@@ -1,4 +1,4 @@
-class Brush {
+export default class Brush {
   constructor(
     name = 'Totally Normal Brush', 
     src = 'brush.png', 

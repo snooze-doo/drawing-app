@@ -1,0 +1,84 @@
+* {
+  user-select: none;
+  image-rendering: pixelated;
+}
+
+.app {
+  height: 100vh;
+  width: 100vw;
+  text-align: center;
+  background-color: #8fab9c;
+  display: flex;
+  animation: filter-animation 40s linear infinite;
+}
+
+.canvas-wrapper {
+  position: absolute;
+}
+
+.entire-canvas {
+  height: 100vh;
+  width: 100vw;
+}
+
+.cursor-info {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  font-size: 16px;
+  padding: 8px;
+  background-color: #00000065;
+  border-radius: 10px;
+  color: white;
+  user-select: none;
+  z-index: 1;
+}
+
+.rotation-info {
+  position: absolute;
+  right: 6px;
+  top: 46px;
+  font-size: 16px;
+  padding: 8px;
+  background-color: #00000065;
+  border-radius: 10px;
+  color: white;
+  user-select: none;
+  z-index: 1;
+}
+
+.scale-info {
+  position: absolute;
+  right: 6px;
+  top: 86px;
+  font-size: 16px;
+  padding: 8px;
+  background-color: #00000065;
+  border-radius: 10px;
+  color: white;
+  user-select: none;
+  z-index: 1;
+}
+
+.fullscreen-toggle {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  font-size: 16px;
+  padding: 8px;
+  background-color: #00000065;
+  border-radius: 10px;
+  color: white;
+  user-select: none;
+  z-index: 1;
+}
+
+.fullscreen-toggle:hover {
+  background-color: #00000095;
+  cursor: pointer;
+}
+
+@keyframes filter-animation {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}

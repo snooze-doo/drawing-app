@@ -1,0 +1,39 @@
+.info {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 6px;
+}
+
+.info-container {
+  color: white;
+  background-color: #00000085;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 16px;
+  padding: 6px 10px;
+  text-align: left;
+  overflow: hidden;
+  transition: 1s cubic-bezier(0.24, 0.31, 0.28, 1.01);
+}
+
+.info-element {
+  min-height: 16px;
+}
+
+.info-hide {
+  color: white;
+  background-color: #00000085;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 16px;
+  padding: 6px 10px;
+  margin-top: 6px;
+  text-align: center;
+}
+
+.hidden {
+  height: 0;
+  overflow: hidden;
+}

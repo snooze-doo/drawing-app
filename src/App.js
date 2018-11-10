@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import DrawingCanvas from './components/DrawingCanvas/DrawingCanvas'
 import interact from 'interactjs'
+import { provide, consume } from "./utils/context";
+
 import './App.css';
 
 const cursor_tools = {
@@ -172,4 +174,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default provide(consume(App))

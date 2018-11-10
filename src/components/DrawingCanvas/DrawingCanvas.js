@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import Tools from '../../utils/tools'
 var Pressure = require('pressure');
 var Victor = require('victor')
 
