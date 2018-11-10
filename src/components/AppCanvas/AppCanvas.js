@@ -5,25 +5,26 @@ import './AppCanvas.css'
 
 class AppCanvas extends Component {
   render() {
-  const { drawingState: { canvas } } = this.props
+  const { drawingState: { canvas, transform } } = this.props
     return (
       <div 
         className='app-canvas'
         style={{
           position: 'absolute',
-          width: `${canvas.transform.size.x}px`,
-          height: `${canvas.transform.size.y}px`,
+          width: `${canvas.size.x}px`,
+          height: `${canvas.size.y}px`,
           backgroundColor: 'white',
+          transition: '0s ease-out',
           transform: `
             translate(
-              ${canvas.transform.position.x}px,
-              ${canvas.transform.position.y}px
+              ${transform.position.x}px,
+              ${transform.position.y}px
             )
             rotate(
-              ${canvas.transform.rotation}deg
+              ${transform.rotation}deg
             )
             scale(
-              ${canvas.transform.scale}
+              ${transform.scale}
             )
           `
         }}

@@ -1,12 +1,14 @@
-import React, { Component } from 'react';
-import { consume } from "../../utils/context";
+import React, { Component } from 'react'
+import { consume } from "../../utils/context"
+import './Layer.css'
 
 class Layer extends Component {
   componentDidMount = () => {
     const { drawingMethods: { loadLayer }, id } = this.props
-    const canvas = this.refs[`layer-${id}`]
-    const ctx = canvas.getContext('2d')
-    loadLayer(id, { ctx, canvas })
+    const element = this.refs[`layer-${id}`]
+    const ctx = element.getContext('2d')
+    ctx.imageSmoothingEnabled = false
+    loadLayer(id, { ctx, element })
   }
 
 
@@ -16,8 +18,8 @@ class Layer extends Component {
     return <canvas
       className={`layer${canvas.activeLayer === id ? ' active' : ''}`}
       ref={`layer-${id}`}
-      width={canvas.transform.size.x}
-      height={canvas.transform.size.y}
+      width={canvas.size.x}
+      height={canvas.size.y}
     />
   }
 }

@@ -4,7 +4,7 @@ import './Debug.css'
 
 class Debug extends Component {
   render() {
-    const { drawingState: { canvas, tool } } = this.props
+    const { drawingState: { transform, tool } } = this.props
     const debug = [
       {
         name: 'Selected Tool',
@@ -16,15 +16,15 @@ class Debug extends Component {
       },
       {
         name: 'Position',
-        value: `(${canvas.transform.position.x}, ${canvas.transform.position.y})`
+        value: `(${transform.position.x}, ${transform.position.y})`
       },
       {
         name: 'Rotation',
-        value: `${canvas.transform.rotation}°`
+        value: `${transform.rotation}°`
       },
       {
         name: 'Zoom',
-        value: `${canvas.transform.scale * 100}%`
+        value: `${transform.scale * 100}%`
       }
     ]
     return (
