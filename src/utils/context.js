@@ -52,19 +52,35 @@ export function provide (Component) {
       pressedKeys[keyCode] = true
       this.setState({ pressedKeys }, () => {
         this.evaluateSelectedTool(keyCode)
+        this.evaluateTemporalTool()
       })
     }
 
     keyUp = keyCode => {
       let { pressedKeys } = this.state
       pressedKeys[keyCode] = false
-      this.setState({ pressedKeys })
+      this.setState({ pressedKeys }, () => {
+        this.evaluateTemporalTool()
+      })
     }
 
     evaluateSelectedTool = keyCode => {
       ToolsArray.map(e => {
         if (e.key === keyCode) this.selectTool(e)
       })
+    }
+
+    evaluateTemporalTool = () => {
+      let { pressedKeys, tool } = this.state
+      tool.temporal = T.NONE
+      let qualifiedTools = ToolsArray.filter(e => e.tmp_key !== null)
+      qualifiedTools.sort((a, b) => a.tmp_key.length - b.tmp_key.length)
+      qualifiedTools.map(e => {
+        let test = e.tmp_key.map(k => pressedKeys[k])
+        let pass = !test.includes(false)
+        if (pass) tool.temporal = e
+      })
+      this.setState({ tool })
     }
 
     selectTool = newTool => {
@@ -84,7 +100,10 @@ export function provide (Component) {
 
     render () {
       const drawingState = this.state
-      const drawingMethods = { loadLayer: this.loadLayer.bind(this) }
+      const drawingMethods = { 
+        loadLayer: this.loadLayer.bind(this),
+        getCurrentTool: this.getCurrentTool.bind(this)  
+      }
       if (drawingState.loading) {
         return <div> Loading... </div>
       } else {

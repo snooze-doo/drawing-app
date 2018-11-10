@@ -7,8 +7,12 @@ class Debug extends Component {
     const { drawingState: { canvas, tool } } = this.props
     const debug = [
       {
-        name: 'Tool',
+        name: 'Selected Tool',
         value: tool.selected.name
+      },
+      {
+        name: 'Temporal Tool',
+        value: tool.temporal.name
       },
       {
         name: 'Position',
@@ -26,7 +30,7 @@ class Debug extends Component {
     return (
       <div className='debug'>
         {debug.map((e, i) => (
-          <div key={`debug-${i}`} className='debug-element'>{`${e.name.padEnd(10)}: ${e.value}`}</div>
+          <div key={`debug-${i}`} className='debug-element'>{`${e.name}: ${e.value}`}</div>
         ))}
       </div>
     );
