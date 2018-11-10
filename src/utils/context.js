@@ -1,6 +1,7 @@
 import React from 'react'
 import T, { ToolsArray } from './tools'
 import { createCanvas } from './canvas'
+import '../Absolute.css'
 
 const DrawingContext = React.createContext();
 
@@ -104,12 +105,18 @@ export function provide (Component) {
         loadLayer: this.loadLayer.bind(this),
         getCurrentTool: this.getCurrentTool.bind(this)  
       }
+      let displayCursor = this.getCurrentTool().default_cursor
       if (drawingState.loading) {
         return <div> Loading... </div>
       } else {
         return (
           <DrawingContext.Provider value={{ drawingState, drawingMethods }}>
             <Component {...this.props} />
+            <style jsx global>{`
+              html {
+                cursor: ${displayCursor};
+              }
+            `}</style>
           </DrawingContext.Provider>
         )
       }
