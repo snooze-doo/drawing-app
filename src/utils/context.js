@@ -7,7 +7,7 @@ import { createCanvas } from './canvas'
 import '../Absolute.css'
 
 const DrawingContext = React.createContext()
-const DISTANCE_BETWEEN_POINTS = 4
+const DISTANCE_BETWEEN_POINTS = 1
 
 const DEFAULT_CANVAS_SIZE = new Victor(500, 500)
 const ww = window.innerWidth
@@ -26,6 +26,8 @@ export function provide (Component) {
         pressure: 0,
         lastDrawingPoint: null,
         lastEventPoint: null,
+        transformRefPoint: null,
+        transformRef: null,
         tool: {
           selected: T.BRUSH,
           temporal: T.NONE
@@ -103,7 +105,7 @@ export function provide (Component) {
       let { pressure } = this.state
       let dp = this.drawingPoint(p.clone())
       let ctx = this.getSelectedLayer().ctx
-      let size = 5 + (pressure * 20) 
+      let size = 5 + (pressure * 10) 
       let base_image = new Image();
       base_image.src = 'brushsoft.png';
       base_image.onload = function(){
@@ -115,16 +117,38 @@ export function provide (Component) {
       this.setState({ lastDrawingPoint: p })
     }
 
-    relativeToCanvasCenter = (p) => {
-      let { transform } = this.state
+    relativeToCanvasCenter = (p, fixedY = true) => {
       let element = this.getSelectedLayer().element
       return p
         .subtract(new Victor( 
           element.getBoundingClientRect().x + element.getBoundingClientRect().width / 2,
           element.getBoundingClientRect().y + element.getBoundingClientRect().height / 2
         ))
+    }
+
+    relativeToCanvasCenterInverted = p => {
+      let element = this.getSelectedLayer().element
+      return p
+        .subtract(new Victor( 
+          element.getBoundingClientRect().x + element.getBoundingClientRect().width / 2,
+          element.getBoundingClientRect().y + element.getBoundingClientRect().height / 2
+        ))
+        .multiply(new Victor(1, -1))
+    }
+
+    transformWithCanvas = p => {
+      let { transform } = this.state
+      return p
         .rotateDeg(transform.rotation)
         .divide(new Victor(transform.scale, transform.scale))
+    }
+
+    transformWithCanvasInverted = p => {
+      let { transform } = this.state
+      return p
+        .rotateDeg(transform.rotation)
+        .divide(new Victor(transform.scale, transform.scale))
+        .multiply(new Victor(1, -1))
     }
     
     drawingPoint = p => {
@@ -135,25 +159,34 @@ export function provide (Component) {
     start = evt => {
       if (evt.targetTouches && evt.targetTouches.length > 1) return
       let eventPoint = new Victor(evt.pageX, evt.pageY)
+      let canvasPoint
       switch (this.getCurrentTool()) {
         case T.BRUSH:
-          let canvasPoint = this.relativeToCanvasCenter(eventPoint.clone())
-          console.log(canvasPoint)
-          this.drawBrush(canvasPoint)
-        case T.HAND:
+          canvasPoint = this.relativeToCanvasCenterInverted(eventPoint.clone())
+          let transformedPoint = this.transformWithCanvasInverted(canvasPoint)
+          this.drawBrush(transformedPoint)
+          this.setState({ transformRefPoint: canvasPoint })
+          break;
         case T.ROTATION:
-          this.setState({ usingTool: true })
+          const { transform } = this.state
+          canvasPoint = this.relativeToCanvasCenterInverted(eventPoint.clone())
+          let transformRef = { rotation: transform.rotation }
+          this.setState({ transformRefPoint: canvasPoint, transformRef })
+          break;
+        case T.HAND:
           break;
         case T.ZOOM_IN:
+          canvasPoint = this.relativeToCanvasCenter(eventPoint.clone())
           this.zoom(canvasPoint, 0.3)
           break;
         case T.ZOOM_OUT:
+          canvasPoint = this.relativeToCanvasCenter(eventPoint.clone())
           this.zoom(canvasPoint, -0.3)
           break;
         default:
           break;
       }
-      this.setState({ lastEventPoint: eventPoint })
+      this.setState({ lastEventPoint: eventPoint, usingTool: true })
     }
     
     move = evt => {
@@ -162,18 +195,14 @@ export function provide (Component) {
         let eventPoint = new Victor(evt.pageX, evt.pageY)
         switch (this.getCurrentTool()) {
           case T.BRUSH:
-            let currentDrawingPoint = this.relativeToCanvasCenter(eventPoint.clone())
+            let currentDrawingPoint = this.relativeToCanvasCenterInverted(eventPoint.clone())
+            this.transformWithCanvasInverted(currentDrawingPoint)
             let d = lastDrawingPoint.distance(currentDrawingPoint)
             let diff = currentDrawingPoint.clone().subtract(lastDrawingPoint)
             let a = diff.angle()
             let segment = new Victor(DISTANCE_BETWEEN_POINTS, 0).rotate(a)
             let times = d / DISTANCE_BETWEEN_POINTS
             let current = lastDrawingPoint.clone()
-            console.log('Last:', lastDrawingPoint)
-            console.log('New:', currentDrawingPoint)
-            console.log('Diff:', diff)
-            console.log('Seg:', segment)
-            console.log('Dist:', d)
             for (let i = 0 ; i < times ; i++) {
               this.drawBrush(current.add(segment))
             }
@@ -191,30 +220,34 @@ export function provide (Component) {
       }
     }
 
-    
     stop = evt => {
       this.setState({ usingTool: false })
     }
 
+
+
     moveCanvas = evt => {
-      const { canvas, lastPos } = this.state
-      let delta = new Victor(evt.pageX, evt.pageY).subtract(lastPos)
-      canvas.transform.position.add(delta)
-      this.setState({ canvas })
+      const { transform, lastEventPoint } = this.state
+      let delta = new Victor(evt.pageX, evt.pageY).subtract(lastEventPoint)
+      transform.position.add(delta)
+      this.setState({ transform })
     }
 
     rotateCanvas = p => {
-      const { canvas, lastPos } = this.state
-      let relativeLastPosAngle = this.relativeToCanvasCenter(lastPos).angleDeg()
-      let currentPosAngle = p.angleDeg()
-      canvas.transform.rotation -= (currentPosAngle - relativeLastPosAngle)
-      this.setState({ canvas })
+      const { transform, transformRefPoint, transformRef } = this.state
+      let currentAngle = this.relativeToCanvasCenterInverted(p).angleDeg()
+      let originalAngle = transformRefPoint.angleDeg()
+      transform.rotation = transformRef.rotation + (originalAngle - currentAngle)
+      this.setState({ transform })
     }
 
     zoom = (p, amount) => {
-      const { canvas } = this.state
-      canvas.transform.scale += amount
-      this.setState({ canvas })
+      const { transform } = this.state
+      transform.scale += amount
+      let multiplier = Math.abs(transform.scale)
+      if(amount > 0) transform.position.subtract(p).divide(new Victor(multiplier, multiplier))
+      if(amount < 0) transform.position.add(p).divide(new Victor(multiplier, multiplier))
+      this.setState({ transform })
     }
 
     getSelectedLayer = () => {
